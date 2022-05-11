@@ -1,54 +1,34 @@
-
 const Controller = require('./controller');
+const models = require('../models')
 
-let index = 1;
-const examples = [
-  { id: index++, title: 'テスト1', body: 'テスト1' },
-  { id: index++, title: 'テスト2', body: 'テスト2' },
-];
-
-class ExamplesController extends Controller {
-  // GET /
-  async index(req, res) {
-    res.render('teams/index', { examples: examples });
-  }
+class TeamsController extends Controller {
 
   // GET /create
   async create(req, res) {
-    res.render('teams/create', { example: { title: '', body: '' } });
+    res.render('teams/create');
   }
 
   // POST /
+  // async store(req, res) {
+  //   teams.push({ ...req.body, id: index++ });
+  //   await req.flash('info', '保存しました');
+  //   res.redirect('/examples/');
+  // }
+
+  // POST /create
   async store(req, res) {
-    examples.push({ ...req.body, id: index++ });
-    await req.flash('info', '保存しました');
-    res.redirect('/examples/');
-  }
-
-  // GET /:id
-  async show(req, res) {
-    const example = examples[req.params.example - 1];
-    res.render('examples/show', { example });
-  }
-
-  // GET /:id/edit
-  async edit(req, res) {
-    const example = examples[req.params.example - 1];
-    res.render('examples/edit', { example });
-  }
-
-  // PUT or PATCH /:id
-  async update(req, res) {
-    examples[req.params.example - 1] = { ...examples[req.params.example - 1], ...req.body };
-    await req.flash('info', '更新しました');
-    res.redirect(`/examples/${req.params.example}`);
-  }
-
-  // DELETE /:id
-  async destroy(req, res) {
-    await req.flash('info', '削除しました（未実装）');
-    res.redirect('/examples/');
+    try {
+      const team = await models.Team.createWithOwner(req.user, req.body);
+      await req.flash('info', `新規チーム${team.name}を作成しました`);
+      res.redirect(`/`);
+    } catch (err) {
+      if(err instanceof ValidationError){
+        res.render('teams/create', { err: err });
+      } else {
+        throw err;
+      }
+    }
   }
 }
 
-module.exports = ExamplesController;
+module.exports = TeamsController;

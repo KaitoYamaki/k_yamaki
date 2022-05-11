@@ -20,7 +20,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(_models) {
-      // define association here
+      this.OwnTeams = this.hasMany(models.Team, {
+        foreignKey: 'ownerId',
+        as: 'ownTeams'
+      });
     }
 
     static async generateHash(password) {
